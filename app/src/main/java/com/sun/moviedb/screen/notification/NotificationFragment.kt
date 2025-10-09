@@ -48,6 +48,9 @@ class NotificationFragment : BaseFragment<FragmentNotificationBinding>(), Notifi
             presenter.markNotificationAsRead(notificationModel.id)
 
             if (notificationModel is NotificationModel.Invite) {
+                // add current member to chosen room
+                presenter.addCurrentUser(notificationModel.roomId)
+
                 Toast.makeText(requireContext(), "Clicked on invite: ${notificationModel.roomName} ${notificationModel.movieLink} ${notificationModel.roomId}", Toast.LENGTH_SHORT).show()
                 navigateToWatch(notificationModel.movieLink,notificationModel.roomId)
             } else if (notificationModel is NotificationModel.System) {

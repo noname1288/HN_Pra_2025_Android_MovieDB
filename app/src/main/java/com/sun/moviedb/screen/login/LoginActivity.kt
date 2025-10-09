@@ -45,24 +45,24 @@ class LoginActivity : BaseActivity<ActivityLoginBinding>(), LoginContract.View {
         presenter = LoginPresenterImpl(authRepository)
         presenter.attachView(this)
 
-        googleSignInLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                    try {
-                        val account = task.getResult(ApiException::class.java)
-                        presenter.handleGoogleSignInResult(account, null)
-                    } catch (e: ApiException) {
-                        presenter.handleGoogleSignInResult(null, e)
+            googleSignInLauncher =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    if (result.resultCode == RESULT_OK) {
+                        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                        try {
+                            val account = task.getResult(ApiException::class.java)
+                            presenter.handleGoogleSignInResult(account, null)
+                        } catch (e: ApiException) {
+                            presenter.handleGoogleSignInResult(null, e)
+                        }
+                    } else {
+                        Log.w(
+                            TAG,
+                            "Google Sign In Canceled or Failed, Result Code: ${result.resultCode}"
+                        )
+                        showGoogleSignInFailed("Google Sign-In was cancelled or failed.")
                     }
-                } else {
-                    Log.w(
-                        TAG,
-                        "Google Sign In Canceled or Failed, Result Code: ${result.resultCode}"
-                    )
-                    showGoogleSignInFailed("Google Sign-In was cancelled or failed.")
                 }
-            }
     }
 
     override fun onDestroy() {

@@ -17,5 +17,6 @@ interface NotificationContract {
         fun loadNotifications()
         fun markNotificationAsRead(notificationId: String)
         // fun addDummyNotification()
+        fun addCurrentUser(roomId: String)
     }
 }

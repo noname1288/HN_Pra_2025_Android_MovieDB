@@ -4,14 +4,21 @@ import android.util.Log
 import com.sun.moviedb.data.model.NotificationModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.sun.moviedb.data.model.Member
+import com.sun.moviedb.data.repository.rtdb.member.MemberRepository
+import com.sun.moviedb.data.repository.rtdb.member.MemberRepositoryImpl
 import com.sun.moviedb.data.repository.rtdb.notification.NotificationOperationListener
 import com.sun.moviedb.data.repository.rtdb.notification.NotificationRepository
 import com.sun.moviedb.data.repository.rtdb.notification.NotificationRepositoryImpl
 import com.sun.moviedb.data.repository.rtdb.notification.NotificationsFetchListener
+import com.sun.moviedb.data.repository.source.remote.NetworkResult
+import com.sun.moviedb.utils.session.UserSession
+import kotlin.String
 
 class NotificationPresenter(
     private val notificationRepository: NotificationRepository =
-        NotificationRepositoryImpl(FirebaseAuth.getInstance(), FirebaseDatabase.getInstance())
+        NotificationRepositoryImpl(FirebaseAuth.getInstance(), FirebaseDatabase.getInstance()),
+    private val memberRepository: MemberRepository = MemberRepositoryImpl.getInstance()
 ) : NotificationContract.Presenter {
 
     private var view: NotificationContract.View? = null
@@ -65,5 +72,34 @@ class NotificationPresenter(
                 view?.showGenericError("Failed to mark notification as read: ${exception.message}")
             }
         })
+    }
+
+    override fun addCurrentUser(roomId: String) {
+        val userId = UserSession.userId
+
+        if (userId.isNullOrEmpty()) {
+            throw Exception("Can't find current user")
+        } else {
+            val currentUser = Member(
+                userId,
+                UserSession.userName ?: "",
+                UserSession.linkAvatar ?: "",
+                System.currentTimeMillis(),
+                false
+            )
+
+            memberRepository.addMember(roomId, currentUser) { result ->
+                when (result) {
+                    is NetworkResult.OnError -> {
+                        view?.showError(result.message)
+                    }
+
+                    is NetworkResult.OnSuccess<*> -> {//nothing}
+                    }
+
+                }
+            }
+
+        }
     }
 }

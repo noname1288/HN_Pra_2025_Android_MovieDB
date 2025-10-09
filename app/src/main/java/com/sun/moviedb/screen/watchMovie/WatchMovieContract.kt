@@ -40,11 +40,13 @@ interface WatchMovieContract {
         fun onResume()
         fun onPause(currentPosition: Long, playWhenReady: Boolean)
         fun onStop()
+
         fun updateRoomId(roomId: String)
         fun observeMembers(roomId: String)
         fun onMemberClicked(member: Member)
         fun onSearchUserClicked()
         fun onInviteUserToRoom(userId: String)
+        fun getCachedMembers() : List<Member>
 
         fun initializeSyncController(roomId: String?)
         fun onLocalPlayerPlayAction()

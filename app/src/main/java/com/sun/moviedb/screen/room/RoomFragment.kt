@@ -60,7 +60,7 @@ class RoomFragment : BaseFragment<FragmentRoomBinding>(), RoomContract.View {
         /*
         * get current list of members if exists
         * */
-//        roomAdapter.setItems(watchPresenter!!.getCachedMembers())
+        roomAdapter.setItems(watchPresenter!!.getCachedMembers())
 
         binding.rvListMember.layoutManager = LinearLayoutManager(
             requireContext(),

@@ -12,6 +12,7 @@ import com.sun.moviedb.data.repository.impl.ControllerRepositoryImpl
 import com.sun.moviedb.data.repository.rtdb.member.MemberRepository
 import com.sun.moviedb.utils.CommandStringParser
 import com.sun.moviedb.utils.CommandType
+import com.sun.moviedb.utils.MemberListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,6 +42,11 @@ class WatchMoviePresenterImpl(
     private var commandListenerJob: Job? = null
     private val presenterScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private var isProcessingRemoteCommand = false
+
+    /*
+    * Control members
+    * */
+    private var _member = mutableListOf<Member>()
 
 
     override fun attachView(view: WatchMovieContract.View) {
@@ -105,7 +111,25 @@ class WatchMoviePresenterImpl(
     }
 
     override fun observeMembers(roomId: String) {
+        memberRepository.listenMemberChanged(roomId){result ->
+            when (result){
+                is MemberListener.OnJoin<Member> -> {
+                    val memberData = result.data
+                    _member.add(memberData)
+                    view?.showAddedMember(memberData.memberName)
+                }
+                is MemberListener.OnLeave<Member> -> {
+                    val memberData = result.data
+                    _member.remove(memberData)
+                    view?.showLeftMember(memberData.memberName)
+                }
+                is MemberListener.OnError -> {
+                    view?.showError(result.message)
+                }
+                is MemberListener.onListChanged<*> -> {}
+            }
 
+        }
     }
 
     override fun onMemberClicked(member: Member) {
@@ -118,6 +142,10 @@ class WatchMoviePresenterImpl(
 
     override fun onInviteUserToRoom(userId: String) {
 
+    }
+
+    override fun getCachedMembers(): List<Member> {
+        return _member.toList()
     }
 
     override fun initializeSyncController(roomId: String?) {
