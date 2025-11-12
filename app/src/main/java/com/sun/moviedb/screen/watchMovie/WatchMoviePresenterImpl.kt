@@ -10,9 +10,12 @@ import com.sun.moviedb.data.model.Member
 import com.sun.moviedb.data.repository.ControllerRepository
 import com.sun.moviedb.data.repository.impl.ControllerRepositoryImpl
 import com.sun.moviedb.data.repository.rtdb.member.MemberRepository
+import com.sun.moviedb.data.repository.source.remote.NetworkResult
 import com.sun.moviedb.utils.CommandStringParser
 import com.sun.moviedb.utils.CommandType
 import com.sun.moviedb.utils.MemberListener
+import com.sun.moviedb.utils.session.RoomSession
+import com.sun.moviedb.utils.session.UserSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,7 +30,9 @@ class WatchMoviePresenterImpl(
     private val contextProvider: () -> WatchMovieActivity?, // For context if absolutely needed
     private val memberRepository: MemberRepository,
     // Inject ControllerRepository and FirebaseAuth for testability
-    private val controllerRepository: ControllerRepository = ControllerRepositoryImpl(FirebaseDatabase.getInstance()),
+    private val controllerRepository: ControllerRepository = ControllerRepositoryImpl(
+        FirebaseDatabase.getInstance()
+    ),
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : WatchMovieContract.Presenter {
 
@@ -90,50 +95,60 @@ class WatchMoviePresenterImpl(
         return Bundle()
     }
 
-    override fun onStart() {
-
-    }
-
-    override fun onResume() {
-
-    }
-
-    override fun onPause(currentPosition: Long, playWhenReady: Boolean) {
-
-    }
-
-    override fun onStop() {
-
-    }
-
     override fun updateRoomId(roomId: String) {
-
+        RoomSession.updateRoomId(roomId)
     }
 
     override fun observeMembers(roomId: String) {
-        memberRepository.listenMemberChanged(roomId){result ->
-            when (result){
+        memberRepository.listenMemberChanged(roomId) { result ->
+            when (result) {
                 is MemberListener.OnJoin<Member> -> {
                     val memberData = result.data
                     _member.add(memberData)
                     view?.showAddedMember(memberData.memberName)
+                    view?.updateMemberList(_member)
                 }
+
                 is MemberListener.OnLeave<Member> -> {
                     val memberData = result.data
                     _member.remove(memberData)
-                    view?.showLeftMember(memberData.memberName)
+
+                    if (UserSession.userId == memberData.memberId) {
+                        view?.popView()
+                        view?.showRemoveCurrentUserMessage("Bạn đã bị đá khỏi phòng :<")
+                    } else {
+                        view?.showLeftMember(memberData.memberName)
+                    }
+                    view?.updateMemberList(_member)
                 }
+
+                is MemberListener.OnChanged<Member> -> {
+                    val updatedMember = result.data
+                    val index = _member.indexOfFirst { it.memberId == updatedMember.memberId }
+                    if (index > 0){
+                        _member[index] = updatedMember
+                        view?.updateMemberList(_member)
+                    }
+                }
+
                 is MemberListener.OnError -> {
                     view?.showError(result.message)
                 }
-                is MemberListener.onListChanged<*> -> {}
             }
-
         }
     }
 
-    override fun onMemberClicked(member: Member) {
+    override fun removeChosenMember(roomId: String, memberId: String) {
+        memberRepository.removeMember(roomId, memberId) { result ->
+            when (result) {
+                is NetworkResult.OnError -> {
+                    view?.showError(result.message)
+                }
 
+                is NetworkResult.OnSuccess -> {/* do nothing*/
+                }
+            }
+        }
     }
 
     override fun onSearchUserClicked() {
@@ -146,6 +161,39 @@ class WatchMoviePresenterImpl(
 
     override fun getCachedMembers(): List<Member> {
         return _member.toList()
+    }
+
+    override fun checkHost(roomId: String, memberId: String): Boolean {
+        var checkedHost = false
+        memberRepository.getMemberById(roomId, memberId){ result ->
+            when(result){
+                is NetworkResult.OnError -> {
+                    view?.showError(result.message)
+                }
+                is NetworkResult.OnSuccess<Member?> -> {
+                    val user = result.data
+                    user?.let {
+                        if (it.host){
+                            checkedHost = true
+                        }
+                    }
+                }
+            }
+        }
+
+        return checkedHost
+    }
+
+    override fun changeHost(roomId: String, newMemberId: String) {
+        memberRepository.changeHost(roomId, newMemberId){ result ->
+            when(result){
+                is NetworkResult.OnError -> {
+                    view?.showError(result.message)
+                }
+                is NetworkResult.OnSuccess<Unit> -> {}
+            }
+
+        }
     }
 
     override fun initializeSyncController(roomId: String?) {
@@ -185,6 +233,10 @@ class WatchMoviePresenterImpl(
         Log.d(TAG, "Presenter stopped listening for commands.")
     }
 
+    override fun removeListener(roomId: String) {
+        memberRepository.removeChildEventListener(roomId)
+    }
+
     private fun processReceivedCommand(parsedCommand: CommandStringParser.ParsedCommand) {
         if (parsedCommand.senderId == currentUserId && isProcessingRemoteCommand) {
             // Avoid loop if we just sent this and player event triggered another send.
@@ -204,7 +256,11 @@ class WatchMoviePresenterImpl(
                             view?.executeRemoteSeek(timeMillis)
                         }
                     }
-                    else -> Log.w(TAG, "Presenter received unknown command type: ${parsedCommand.type}")
+
+                    else -> Log.w(
+                        TAG,
+                        "Presenter received unknown command type: ${parsedCommand.type}"
+                    )
                 }
             } finally {
                 kotlinx.coroutines.delay(100)
@@ -221,7 +277,11 @@ class WatchMoviePresenterImpl(
             return
         }
 
-        val commandString = CommandStringParser.createCommandString(type = commandType, senderId = sender, value = value)
+        val commandString = CommandStringParser.createCommandString(
+            type = commandType,
+            senderId = sender,
+            value = value
+        )
         presenterScope.launch {
             val result = controllerRepository.sendRoomCommandString(roomId, commandString)
             result.onSuccess {

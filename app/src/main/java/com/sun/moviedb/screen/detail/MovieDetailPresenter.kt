@@ -9,7 +9,6 @@ import com.sun.moviedb.data.repository.source.MovieRepository
 import com.sun.moviedb.data.repository.source.firebase.entity.MovieFirebaseEntity
 import com.sun.moviedb.data.repository.source.remote.NetworkResult
 import com.sun.moviedb.data.repository.source.remote.dto.MovieDetailResponse
-import com.sun.moviedb.utils.session.RoomSession
 import com.sun.moviedb.utils.session.UserSession
 
 class MovieDetailPresenter
@@ -34,7 +33,7 @@ internal constructor(
             when (result) {
                 is NetworkResult.OnSuccess<MovieDetailResponse> -> {
                     val movie = result.data.movie
-                    val episodes = result.data.episodes
+                    val episodes = result.data.episodeWrappers
 
                     mView?.onGetDetailSuccess(movie, episodes)
                 }
@@ -86,8 +85,6 @@ internal constructor(
             createBy = userID
         )
 
-        RoomSession.updateRoomName(room.roomName)
-
         mView?.showLoading2(true)
         roomRepository.addRoom(room) { result ->
             when (result) {
@@ -103,8 +100,6 @@ internal constructor(
             }
             mView?.showLoading2(false)
         }
-
-
     }
 
     override fun addCurrentMember(roomId: String) {
@@ -121,7 +116,7 @@ internal constructor(
             memberName = UserSession.userName ?: "Unknown",
             linkAvatar = UserSession.linkAvatar ?: "",
             joinAt = System.currentTimeMillis(),
-            isHost = true // Assuming the user is the host when creating the room
+            host = true
         )
 
         memberRepository.addMember(roomId, member) { result ->
@@ -152,7 +147,5 @@ internal constructor(
 
     override fun removeMemberListener(roomId: String) {
         memberRepository.removeChildEventListener(roomId)
-        memberRepository.removeValueEventListener(roomId)
-//        roomRepository.removeListener(roomId)
     }
 }

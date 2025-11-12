@@ -4,14 +4,14 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.sun.moviedb.data.model.Episode
-import com.sun.moviedb.data.model.ServerData
+import com.sun.moviedb.data.model.EpisodeWrapper
+import com.sun.moviedb.data.model.EpisodeModel
 import com.sun.moviedb.databinding.ItemSeriesTabBinding
 
-class EpsListAdapter(
-    private val item: List<Episode>,
-    private val onClick: (List<ServerData>) -> Unit,
-) : RecyclerView.Adapter<EpsListAdapter.ViewHolder>() {
+class ServerAdapter(
+    private val item: List<EpisodeWrapper>,
+    private val onClick: (List<EpisodeModel>) -> Unit,
+) : RecyclerView.Adapter<ServerAdapter.ViewHolder>() {
 
     private lateinit var context: Context
     private var selectedPos = RecyclerView.NO_POSITION

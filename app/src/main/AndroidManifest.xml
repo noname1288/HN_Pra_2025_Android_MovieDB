@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name=".MyApp"
@@ -14,39 +17,51 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MovieDB">
+        <service
+            android:name=".service.MyMediaService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback">
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".screen.watch_new.NewWatchMovieActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:exported="false"
+            android:screenOrientation="sensorLandscape" />
 
         <service android:name=".service.SyncLocalFirebaseService" />
         <service android:name=".service.ClearLocalDataService" />
 
         <activity
             android:name=".screen.login.LoginActivity"
+            android:exported="false"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
-            android:exported="false"/>
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".screen.splash.SplashActivity"
+            android:exported="true"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
-            android:exported="true">
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity
             android:name=".screen.MainActivity"
+            android:exported="true"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
-            android:exported="true" />
-
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".screen.watchMovie.WatchMovieActivity"
+            android:exported="true"
             android:screenOrientation="landscape"
-            tools:ignore="LockedOrientationActivity"
-            android:exported="true" />
-
+            tools:ignore="LockedOrientationActivity" />
     </application>
 
 </manifest>

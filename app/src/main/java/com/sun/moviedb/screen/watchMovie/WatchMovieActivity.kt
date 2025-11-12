@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -29,31 +28,20 @@ class WatchMovieActivity : BaseActivity<ActivityWatchMovieBinding>(), WatchMovie
 
     private lateinit var presenter: WatchMovieContract.Presenter
 
+    private var activityOriginalOrientation: Int = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+    private var roomId: String? = null
     private var m3u8Link: String? = null
     private var initialPlaybackPosition = 0L
     private var initialPlayWhenReady = true
-    private var activityOriginalOrientation: Int = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    private var currentFragmentTag: String? = null
-    private var isFragmentVisible = false
-    private var roomId: String? = null
-    private val TAG = "WatchMovieActivity"
-
+    private var lastReportedIsPlayingToPresenter = false
+    private var lastReportedSeekPositionToPresenter = -1L
     private var isPlayerInternallyChanging = false
 
-    companion object {
-        private const val ARG_M3U8_LINK = "m3u8_link"
-        const val ARG_ROOM_ID = "room_id"
-        private const val SAVED_PLAYBACK_POSITION = "playbackPosition"
-        private const val SAVED_PLAY_WHEN_READY = "playWhenReady"
-        private const val CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT"
-        private const val ROOM_FRAGMENT_TAG = "ROOM_FRAGMENT"
+    private var currentFragmentTag: String? = null
+    private var isFragmentVisible = false
 
-        fun newIntent(context: Context, m3u8Link: String): Intent {
-            val intent = Intent(context, WatchMovieActivity::class.java)
-            intent.putExtra(ARG_M3U8_LINK, m3u8Link)
-            return intent
-        }
-    }
+    private val TAG = "WatchMovieActivity"
 
     override fun getViewBinding(): ActivityWatchMovieBinding {
         return ActivityWatchMovieBinding.inflate(layoutInflater)
@@ -90,8 +78,71 @@ class WatchMovieActivity : BaseActivity<ActivityWatchMovieBinding>(), WatchMovie
         supportActionBar?.hide()
     }
 
-    private var lastReportedIsPlayingToPresenter = false
-    private var lastReportedSeekPositionToPresenter = -1L
+    override fun onStart() {
+        super.onStart()
+        roomId?.let { currentRoomId ->
+            if (currentRoomId.isNotBlank()) {
+                presenter.updateRoomId(currentRoomId)
+                presenter.observeMembers(currentRoomId)
+                presenter.initializeSyncController(currentRoomId)
+            }
+        }
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        initialPlaybackPosition = savedInstanceState.getLong(SAVED_PLAYBACK_POSITION, 0L)
+        initialPlayWhenReady = savedInstanceState.getBoolean(SAVED_PLAY_WHEN_READY, true)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.playerView.player?.playWhenReady = lastReportedIsPlayingToPresenter
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.playerView.player?.let {
+            lastReportedIsPlayingToPresenter = it.playWhenReady
+        }
+//        val currentPosition = binding.playerView.player?.currentPosition ?: initialPlaybackPosition
+//        val currentPlayWhenReady = binding.playerView.player?.playWhenReady ?: initialPlayWhenReady
+    }
+
+    override fun onStop() {
+        super.onStop()
+        presenter.stopSyncController()
+        roomId?.let { presenter.removeListener(it) }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        val stateBundle = presenter.onSaveInstanceStateRequested()
+        outState.putLong(
+            SAVED_PLAYBACK_POSITION,
+            stateBundle.getLong(SAVED_PLAYBACK_POSITION, initialPlaybackPosition)
+        )
+        outState.putBoolean(
+            SAVED_PLAY_WHEN_READY,
+            stateBundle.getBoolean(SAVED_PLAY_WHEN_READY, initialPlayWhenReady)
+        )
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        releasePlayerView()
+
+        presenter.detachView()
+    }
+
+    override fun showLoading(isLoading: Boolean) {
+
+    }
+
+    override fun showError(message: String) {
+
+    }
 
     private val localPlayerListener = object : Player.Listener {
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -214,6 +265,7 @@ class WatchMovieActivity : BaseActivity<ActivityWatchMovieBinding>(), WatchMovie
     }
 
     override fun getInitialPlaybackPosition(): Long = initialPlaybackPosition
+
     override fun getInitialPlayWhenReady(): Boolean = initialPlayWhenReady
 
     override fun setOriginalOrientation(orientation: Int) {
@@ -222,11 +274,7 @@ class WatchMovieActivity : BaseActivity<ActivityWatchMovieBinding>(), WatchMovie
 
     override fun getOriginalOrientation(): Int = this.activityOriginalOrientation
 
-    override fun popView(data: Bundle?) {
-        if (data != null && data.containsKey("message")) {
-            val message = data.getString("message", "")
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        }
+    override fun popView() {
         finish()
     }
 
@@ -240,69 +288,16 @@ class WatchMovieActivity : BaseActivity<ActivityWatchMovieBinding>(), WatchMovie
         Toast.makeText(this, "$memberName has left the room", Toast.LENGTH_SHORT).show()
     }
 
+    override fun showRemoveCurrentUserMessage(message: String) {
+        Log.d(TAG, "showRemoveCurrentUser: $message")
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
     override fun updateMemberList(members: List<Member>) {
         val roomFragment = supportFragmentManager.findFragmentByTag(ROOM_FRAGMENT_TAG)
         if (roomFragment is RoomFragment) {
             roomFragment.updateMembers(members)
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        val stateBundle = presenter.onSaveInstanceStateRequested()
-        outState.putLong(
-            SAVED_PLAYBACK_POSITION,
-            stateBundle.getLong(SAVED_PLAYBACK_POSITION, initialPlaybackPosition)
-        )
-        outState.putBoolean(
-            SAVED_PLAY_WHEN_READY,
-            stateBundle.getBoolean(SAVED_PLAY_WHEN_READY, initialPlayWhenReady)
-        )
-        super.onSaveInstanceState(outState)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        initialPlaybackPosition = savedInstanceState.getLong(SAVED_PLAYBACK_POSITION, 0L)
-        initialPlayWhenReady = savedInstanceState.getBoolean(SAVED_PLAY_WHEN_READY, true)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        presenter.onStart()
-        roomId?.let { currentRoomId ->
-            if (currentRoomId.isNotBlank()) {
-                presenter.updateRoomId(currentRoomId)
-                presenter.observeMembers(currentRoomId)
-                presenter.initializeSyncController(currentRoomId)
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        presenter.onResume()
-        binding.playerView.player?.playWhenReady = lastReportedIsPlayingToPresenter
-    }
-
-    override fun onPause() {
-        super.onPause()
-        binding.playerView.player?.let {
-            lastReportedIsPlayingToPresenter = it.playWhenReady
-        }
-        val currentPosition = binding.playerView.player?.currentPosition ?: initialPlaybackPosition
-        val currentPlayWhenReady = binding.playerView.player?.playWhenReady ?: initialPlayWhenReady
-        presenter.onPause(currentPosition, currentPlayWhenReady)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        presenter.onStop()
-        presenter.stopSyncController()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        presenter.detachView()
     }
 
     private fun showOrHideFragment() {
@@ -403,11 +398,12 @@ class WatchMovieActivity : BaseActivity<ActivityWatchMovieBinding>(), WatchMovie
         isFragmentVisible = false
     }
 
-    override fun showLoading(isLoading: Boolean) {
-
-    }
-
-    override fun showError(message: String) {
-
+    companion object {
+        const val ARG_M3U8_LINK = "m3u8_link"
+        const val ARG_ROOM_ID = "room_id"
+        private const val SAVED_PLAYBACK_POSITION = "playbackPosition"
+        private const val SAVED_PLAY_WHEN_READY = "playWhenReady"
+        private const val CHAT_FRAGMENT_TAG = "CHAT_FRAGMENT"
+        private const val ROOM_FRAGMENT_TAG = "ROOM_FRAGMENT"
     }
 }

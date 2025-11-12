@@ -90,7 +90,6 @@ class ChatRepositoryImpl : ChatRepository {
             override fun onCancelled(error: DatabaseError) {
                 onResult(NetworkResult.OnError(null, error.message))
             }
-
         })
 
         chatRef.child(roomId).orderByChild("createAt").addChildEventListener(messageListener!!)

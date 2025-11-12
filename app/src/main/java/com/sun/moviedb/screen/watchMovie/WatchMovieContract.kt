@@ -17,9 +17,10 @@ interface WatchMovieContract {
         fun getInitialPlayWhenReady(): Boolean
         fun setOriginalOrientation(orientation: Int)
         fun getOriginalOrientation(): Int
-        fun popView(data: Bundle?)
+        fun popView()
         fun showAddedMember(memberName: String)
         fun showLeftMember(memberName: String)
+        fun showRemoveCurrentUserMessage(message: String)
         fun updateMemberList(members: List<Member>)
 
         fun executeRemotePlay()
@@ -36,22 +37,22 @@ interface WatchMovieContract {
         )
 
         fun onSaveInstanceStateRequested(): Bundle
-        fun onStart()
-        fun onResume()
-        fun onPause(currentPosition: Long, playWhenReady: Boolean)
-        fun onStop()
 
         fun updateRoomId(roomId: String)
         fun observeMembers(roomId: String)
-        fun onMemberClicked(member: Member)
+        fun removeChosenMember(roomId: String, memberId: String)
         fun onSearchUserClicked()
         fun onInviteUserToRoom(userId: String)
         fun getCachedMembers() : List<Member>
+        fun checkHost(roomId: String, memberId: String): Boolean
+        fun changeHost(roomId: String, newMemberId: String)
 
         fun initializeSyncController(roomId: String?)
         fun onLocalPlayerPlayAction()
         fun onLocalPlayerPauseAction()
         fun onLocalPlayerSeekAction(positionMs: Long)
         fun stopSyncController()
+
+        fun removeListener(roomId: String)
     }
 }

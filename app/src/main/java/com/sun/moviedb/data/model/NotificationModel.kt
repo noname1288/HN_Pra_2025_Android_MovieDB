@@ -6,7 +6,7 @@ sealed class NotificationModel {
     abstract val title: String
     abstract val body: String
     abstract val createAt: Long
-    abstract var isRead: Boolean
+    abstract var read: Boolean
 
     data class Invite(
         override val id: String = "",
@@ -14,7 +14,7 @@ sealed class NotificationModel {
         override val title: String = "",
         override val body: String = "",
         override val createAt: Long = 0L,
-        override var isRead: Boolean = false,
+        override var read: Boolean = false,
         val roomId: String = "",
         val roomName: String = "",
         val senderId: String = "",
@@ -30,7 +30,7 @@ sealed class NotificationModel {
         override val title: String = "",
         override val body: String = "",
         override val createAt: Long = 0L,
-        override var isRead: Boolean = false
+        override var read: Boolean = false
     ) : NotificationModel()
 }
 

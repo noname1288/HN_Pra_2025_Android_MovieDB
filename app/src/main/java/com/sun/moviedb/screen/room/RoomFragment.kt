@@ -12,6 +12,7 @@ import com.sun.moviedb.screen.room.adapter.RoomAdapter
 import com.sun.moviedb.screen.watchMovie.WatchMovieContract
 import com.sun.moviedb.utils.base.BaseFragment
 import com.sun.moviedb.utils.session.RoomSession
+import com.sun.moviedb.utils.session.UserSession
 
 class RoomFragment : BaseFragment<FragmentRoomBinding>(), RoomContract.View {
 
@@ -50,11 +51,11 @@ class RoomFragment : BaseFragment<FragmentRoomBinding>(), RoomContract.View {
         if (watchPresenter == null)
             throw Exception("Presenter is null, please set it before using RoomFragment")
 
-        roomAdapter = RoomAdapter { choosenMember ->
+        roomAdapter = RoomAdapter { chosenMember ->
             if (roomId.isEmpty())
                 throw Exception("Room Id is empty, please set it before removing member in HomeFragment")
-//            watchPresenter!!.removeChosenMember(roomId, choosenMember)
-            roomAdapter.removeItem(choosenMember)
+            watchPresenter!!.removeChosenMember(roomId, chosenMember.memberId) // remove node
+            roomAdapter.removeItem(chosenMember)
         }
 
         /*
@@ -84,13 +85,30 @@ class RoomFragment : BaseFragment<FragmentRoomBinding>(), RoomContract.View {
 
     private fun onLeaveRoomButtonClicked() {
         binding.btnOutRoom.setOnClickListener {
-            requireActivity().setResult(
-                Activity.RESULT_OK,
-                Intent()
-                    .putExtra(HAS_ROOM, true)
-                    .putExtra(MESSAGE_AFTER_LEFT_ROOM, "Bạn đã rời khỏi phòng")
-            )
-            requireActivity().finish()
+            val currentUserId = UserSession.userId
+
+            currentUserId?.let {
+                if (watchPresenter!!.checkHost(roomId, it)){
+                    // find the first remaining member who isn't the current user
+                    val newHostId = memberList.firstOrNull { it.memberId != currentUserId }?.memberId
+                    if (newHostId != null) {
+                        watchPresenter!!.changeHost(roomId, newHostId)
+                    } else {
+                        // No one left → maybe delete the room or mark it inactive
+                        Toast.makeText(requireContext(), "Không còn thành viên nào để chuyển chủ phòng", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                watchPresenter!!.removeChosenMember(roomId, it)
+
+                requireActivity().setResult(
+                    Activity.RESULT_OK,
+                    Intent()
+                        .putExtra(HAS_ROOM, true)
+                        .putExtra(MESSAGE_AFTER_LEFT_ROOM, "Bạn đã rời khỏi phòng")
+                )
+                requireActivity().finish()
+            }
         }
     }
 

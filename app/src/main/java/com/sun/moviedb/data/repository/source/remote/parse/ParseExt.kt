@@ -2,11 +2,11 @@ package com.sun.moviedb.data.repository.source.remote.parse
 
 import com.sun.moviedb.data.model.Category
 import com.sun.moviedb.data.model.Country
-import com.sun.moviedb.data.model.Episode
+import com.sun.moviedb.data.model.EpisodeWrapper
 import com.sun.moviedb.data.model.Item
 import com.sun.moviedb.data.model.Movie
 import com.sun.moviedb.data.model.Pagination
-import com.sun.moviedb.data.model.ServerData
+import com.sun.moviedb.data.model.EpisodeModel
 import com.sun.moviedb.utils.Constants
 import org.json.JSONArray
 import org.json.JSONObject
@@ -71,7 +71,7 @@ fun JSONArray.toStringList(): List<String> {
     return out
 }
 
-fun JSONObject.toServerData(): ServerData = ServerData(
+fun JSONObject.toServerData(): EpisodeModel = EpisodeModel(
     filename = optString("filename"),
     linkEmbed = optString("link_embed"),
     linkM3u8 = optString("link_m3u8"),
@@ -79,14 +79,14 @@ fun JSONObject.toServerData(): ServerData = ServerData(
     slug = optString("slug")
 )
 
-fun JSONArray.toServerDataList(): List<ServerData> = mapObjects { it.toServerData() }
+fun JSONArray.toServerDataList(): List<EpisodeModel> = mapObjects { it.toServerData() }
 
-fun JSONObject.toEpisode(): Episode = Episode(
+fun JSONObject.toEpisode(): EpisodeWrapper = EpisodeWrapper(
     serverName = optString("server_name"),
     serverData = optJSONArray("server_data")?.toServerDataList() ?: emptyList()
 )
 
-fun JSONArray.toEpisodeList(): List<Episode> = mapObjects { it.toEpisode() }
+fun JSONArray.toEpisodeList(): List<EpisodeWrapper> = mapObjects { it.toEpisode() }
 
 fun JSONObject.toMovie(): Movie = Movie(
     id = optString("_id"),

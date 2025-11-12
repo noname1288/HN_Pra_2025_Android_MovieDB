@@ -17,7 +17,7 @@ class ChatPresenter(private val chatRepository: ChatRepository) : ChatContract.P
                         view?.addMessages(result.data as MessageModel)
                     }
 
-                    is NetworkResult.OnError -> view?.showError(result.message)
+                    is NetworkResult.OnError -> {}
                 }
                 view?.showLoading(false)
             }

@@ -1,5 +1,7 @@
 package com.sun.moviedb.screen.room
 
+import com.sun.moviedb.data.repository.rtdb.member.MemberRepositoryImpl
+
 class RoomPresenter : RoomContract.Presenter {
     private var view: RoomContract.View? = null
 

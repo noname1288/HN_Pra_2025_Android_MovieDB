@@ -11,7 +11,7 @@ fun String.toDetailMovieResponse(): MovieDetailResponse {
     val movie = root.optJSONObject("movie")?.toMovie() ?: Movie()
     val episodes = root.optJSONArray("episodes")?.toEpisodeList() ?: emptyList()
     return MovieDetailResponse(
-        episodes = episodes,
+        episodeWrappers = episodes,
         movie = movie,
         msg = msg,
         status = status

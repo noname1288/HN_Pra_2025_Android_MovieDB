@@ -4,13 +4,13 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.sun.moviedb.data.model.ServerData
+import com.sun.moviedb.data.model.EpisodeModel
 import com.sun.moviedb.databinding.ViewholderEpsItemBinding
 
-class ServerDataListAdapter(
-    private val items: List<ServerData>,
+class EpisodeAdapter(
+    private val items: List<EpisodeModel>,
     private val onClick: (String) -> Unit
-) : RecyclerView.Adapter<ServerDataListAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<EpisodeAdapter.ViewHolder>() {
 
     private lateinit var context: Context
 

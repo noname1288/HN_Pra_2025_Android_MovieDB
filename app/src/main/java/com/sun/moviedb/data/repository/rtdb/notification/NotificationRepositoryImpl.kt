@@ -102,7 +102,7 @@ class NotificationRepositoryImpl(
             return
         }
 
-        notificationsNodeRef.child(userId).child(notificationId).child("isRead").setValue(true)
+        notificationsNodeRef.child(userId).child(notificationId).child("read").setValue(true)
             .addOnSuccessListener {
                 Log.d(TAG, "Notification marked as read: $notificationId for user: $userId")
                 listener.onSuccess()

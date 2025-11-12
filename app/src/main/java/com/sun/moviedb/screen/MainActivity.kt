@@ -7,6 +7,7 @@ import com.sun.moviedb.utils.navigation.AppNavigator
 import com.sun.moviedb.utils.navigation.NavDestination
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
+    private val TAG = "MainActivity"
 
     override fun getViewBinding(): ActivityMainBinding {
         return ActivityMainBinding.inflate(layoutInflater)
@@ -56,5 +57,50 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         super.initData()
 
 
+    }
+
+    override fun onStart() {
+        super.onStart()
+        android.util.Log.d(TAG, "onStart called")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        android.util.Log.d(TAG, "onRestart called")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        android.util.Log.d(TAG, "onResume called")
+    }
+
+    override fun onPause() {
+        android.util.Log.d(TAG, "onPause called")
+        super.onPause()
+    }
+
+    override fun onStop() {
+        android.util.Log.d(TAG, "onStop called")
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        android.util.Log.d(TAG, "onDestroy called")
+    }
+
+    override fun onSaveInstanceState(outState: android.os.Bundle) {
+        android.util.Log.d(TAG, "onSaveInstanceState called")
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: android.os.Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        android.util.Log.d(TAG, "onRestoreInstanceState called")
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        android.util.Log.d(TAG, "onConfigurationChanged called: $newConfig")
     }
 }

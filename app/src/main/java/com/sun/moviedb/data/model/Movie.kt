@@ -1,5 +1,9 @@
 package com.sun.moviedb.data.model
 
+import kotlinx.parcelize.Parcelize
+import android.os.Parcelable
+
+@Parcelize
 data class Movie(
     val id: String = "",
     val actor: List<String> = emptyList(),
@@ -23,4 +27,4 @@ data class Movie(
     val type: String = "",
     val view: Int = 0,
     val year: Int = 0
-)
+) : Parcelable

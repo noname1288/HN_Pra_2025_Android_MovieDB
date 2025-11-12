@@ -5,7 +5,7 @@ data class Member(
     val memberName: String = "",
     var linkAvatar: String = "",
     var joinAt: Long = 0L,
-    var isHost: Boolean = false,
+    var host: Boolean = false,
 )
 
 

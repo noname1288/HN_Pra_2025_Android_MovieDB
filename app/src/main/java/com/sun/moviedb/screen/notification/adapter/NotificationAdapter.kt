@@ -81,7 +81,7 @@ class NotificationAdapter(
                 binding.imgNotiItem.setImageResource(R.mipmap.ic_launcher_round)
             }
 
-            binding.imgRedDot.visibility = if (item.isRead) View.GONE else View.VISIBLE
+            binding.imgRedDot.visibility = if (item.read) View.GONE else View.VISIBLE
 
             binding.root.setOnClickListener {
                 Log.d(TAG, "Invite item clicked: ${item.id}")
@@ -113,7 +113,7 @@ class NotificationAdapter(
                 .apply(RequestOptions.circleCropTransform())
                 .into(binding.imgNotiItem)
 
-            binding.imgRedDot.visibility = if (item.isRead) View.GONE else View.VISIBLE
+            binding.imgRedDot.visibility = if (item.read) View.GONE else View.VISIBLE
 
             binding.root.setOnClickListener {
                 Log.d(TAG, "System item clicked: ${item.id}")

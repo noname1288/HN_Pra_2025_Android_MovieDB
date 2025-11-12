@@ -13,26 +13,27 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.sun.moviedb.R
 import com.sun.moviedb.data.model.Category
-import com.sun.moviedb.data.model.Episode
+import com.sun.moviedb.data.model.EpisodeWrapper
 import com.sun.moviedb.data.model.Movie
-import com.sun.moviedb.data.model.ServerData
+import com.sun.moviedb.data.model.EpisodeModel
 import com.sun.moviedb.utils.base.BaseFragment
 import com.sun.moviedb.databinding.FragmentMovieDetailBinding
-import com.sun.moviedb.screen.detail.adapter.EpsListAdapter
-import com.sun.moviedb.screen.detail.adapter.ServerDataListAdapter
+import com.sun.moviedb.screen.detail.adapter.ServerAdapter
+import com.sun.moviedb.screen.detail.adapter.EpisodeAdapter
 import com.sun.moviedb.MyApp
 import com.sun.moviedb.screen.room.RoomFragment
 import com.sun.moviedb.screen.watchMovie.WatchMovieActivity
+import com.sun.moviedb.screen.watch_new.NewWatchMovieActivity
 import com.sun.moviedb.utils.AppLocator
 import com.sun.moviedb.utils.session.RoomSession
 import com.sun.moviedb.utils.navigation.AppNavigator
 
 class MovieDetailFragment : BaseFragment<FragmentMovieDetailBinding>(), MovieDetailContract.View {
-    private lateinit var epsListAdapter: EpsListAdapter
-    private lateinit var serverDataListAdapter: ServerDataListAdapter
+    private lateinit var serverAdapter: ServerAdapter
+    private lateinit var episodeAdapter: EpisodeAdapter
     private lateinit var presenter: MovieDetailPresenter
     private lateinit var movieInfo: Movie
-    private lateinit var episodes: List<Episode>
+    private lateinit var episodeWrappers: List<EpisodeWrapper>
     private var isFavourite = false
     private var slug: String = ""
 
@@ -54,7 +55,6 @@ class MovieDetailFragment : BaseFragment<FragmentMovieDetailBinding>(), MovieDet
                 RoomSession.roomId = null
             }
         }
-
     }
 
     private val TAG = "MovieDetailFragment"
@@ -100,12 +100,12 @@ class MovieDetailFragment : BaseFragment<FragmentMovieDetailBinding>(), MovieDet
 
     override fun onGetDetailSuccess(
         movie: Movie,
-        episodes: List<Episode>
+        episodeWrappers: List<EpisodeWrapper>
     ) {
         this.movieInfo = movie
-        this.episodes = episodes
+        this.episodeWrappers = episodeWrappers
         Log.d(TAG, "Movie: $movie")
-        Log.d(TAG, "Episodes: $episodes")
+        Log.d(TAG, "Episodes: $episodeWrappers")
 
         showLoading(false)
         setUI()
@@ -161,35 +161,37 @@ class MovieDetailFragment : BaseFragment<FragmentMovieDetailBinding>(), MovieDet
     }
 
     private fun setEpsListView() {
-        epsListAdapter = EpsListAdapter(episodes) { serverDatas ->
-            setServerDataListView(serverDatas)
+        serverAdapter = ServerAdapter(episodeWrappers) { episodes ->
+            setupEpisodeAdapter(episodes)
         }
 
         binding.rvListEps.layoutManager = LinearLayoutManager(
             requireContext(),
             LinearLayoutManager.HORIZONTAL, false
         )
-        binding.rvListEps.adapter = epsListAdapter
+        binding.rvListEps.adapter = serverAdapter
 
-        if (episodes.isNotEmpty()) {
+        if (episodeWrappers.isNotEmpty()) {
             /* *
             * Auto select the first serverdata
             * */
-            epsListAdapter.selectFirstItem()
+            serverAdapter.selectFirstItem()
         }
     }
 
-    private fun setServerDataListView(serverData: List<ServerData>) {
+    private fun setupEpisodeAdapter(serverData: List<EpisodeModel>) {
         binding.progressBar2.visibility = ViewGroup.VISIBLE
 
-        serverDataListAdapter = ServerDataListAdapter(serverData) { item ->
+        episodeAdapter = EpisodeAdapter(serverData) { item ->
             // Handle click on server data
-            Toast.makeText(requireContext(), "Link m3u8: $item", Toast.LENGTH_SHORT).show()
-            val intent = Intent(requireContext(), WatchMovieActivity::class.java).apply {
-                putExtra(ARG_M3U8_LINK, item)
-                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
-            startActivity(intent)
+//            Toast.makeText(requireContext(), "Link m3u8: $item", Toast.LENGTH_SHORT).show()
+//            val intent = Intent(requireContext(), WatchMovieActivity::class.java).apply {
+//                putExtra(WatchMovieActivity.ARG_M3U8_LINK, item)
+//                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+//            }
+//            startActivity(intent)
+
+            navigateToWatchMovie(item)
 
         }
 
@@ -197,7 +199,7 @@ class MovieDetailFragment : BaseFragment<FragmentMovieDetailBinding>(), MovieDet
             requireContext(),
             LinearLayoutManager.HORIZONTAL, false
         )
-        binding.rvListServerData.adapter = serverDataListAdapter
+        binding.rvListServerData.adapter = episodeAdapter
 
         binding.progressBar2.visibility = ViewGroup.GONE
 
@@ -250,14 +252,14 @@ class MovieDetailFragment : BaseFragment<FragmentMovieDetailBinding>(), MovieDet
             * Default: Watch movie from the first episode
             * */
 
-            val firstEpisode = episodes.firstOrNull()
+            val firstEpisode = episodeWrappers.firstOrNull()
             if (firstEpisode != null && firstEpisode.serverData.isNotEmpty()) {
                 val firstServerData = firstEpisode.serverData.firstOrNull()
                 val roomId = RoomSession.roomId ?: ""
                 if (firstServerData != null && roomId.isNotEmpty()) {
                     val intent = Intent(requireContext(), WatchMovieActivity::class.java).apply {
-                        putExtra(ARG_M3U8_LINK, firstServerData.linkM3u8)
-                        putExtra(ARG_ROOM_ID, roomId)
+                        putExtra(WatchMovieActivity.ARG_M3U8_LINK, firstServerData.linkM3u8)
+                        putExtra(WatchMovieActivity.ARG_ROOM_ID, roomId)
                         flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     }
                     watchLauncher.launch(intent)
@@ -289,10 +291,17 @@ class MovieDetailFragment : BaseFragment<FragmentMovieDetailBinding>(), MovieDet
         return "Unknown"
     }
 
+    private fun navigateToWatchMovie (videoUrl : String){
+        val intent = Intent(requireContext(), NewWatchMovieActivity::class.java).apply {
+            putExtra(NewWatchMovieActivity.M3U8_LINK, videoUrl)
+            putExtra(NewWatchMovieActivity.OBJECT_MOVIE, movieInfo)
+        }
+
+        startActivity(intent)
+    }
+
     companion object {
         private const val KEY_SLUG = "slug"
-        private const val ARG_M3U8_LINK = "m3u8_link"
-        const val ARG_ROOM_ID = "room_id"
         fun newInstance(slug: String): MovieDetailFragment {
             val fragment = MovieDetailFragment()
             val args = Bundle().apply {

@@ -160,7 +160,7 @@ class SearchUserPresenterImpl(
                     title = "Lời mời mời tham gia phòng",
                     body = "${currentUser?.displayName} mời bạn tham gia phòng ${RoomSession.roomName}.",
                     createAt = System.currentTimeMillis(),
-                    isRead = false,
+                    read = false,
                     roomId = RoomSession.roomId!!,
                     roomName = RoomSession.roomName!!,
                     senderId = currentUser?.uid ?:"",

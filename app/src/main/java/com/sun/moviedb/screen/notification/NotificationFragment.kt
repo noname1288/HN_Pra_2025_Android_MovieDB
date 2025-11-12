@@ -138,7 +138,7 @@ class NotificationFragment : BaseFragment<FragmentNotificationBinding>(), Notifi
             memberName = UserSession.userName ?: "Unknown",
             linkAvatar = UserSession.linkAvatar ?: "",
             joinAt = System.currentTimeMillis(),
-            isHost = false
+            host = false
         )
 
         AppLocator.memberRepository.addMember(roomId, member) { result ->
