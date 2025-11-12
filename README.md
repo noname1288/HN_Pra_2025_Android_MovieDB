@@ -43,3 +43,12 @@ Episode
 4. **ServerData** → chứa link thực tế để phát video.
 5. **Params** và **Pagination** → phục vụ phân trang và lọc dữ liệu.
 
+## **4. Demo**
+## 🎥 Feature Demos
+
+| Feature | Preview |
+|----------|----------|
+| 🕹️ Watch Movie | [![Watch Movie]]([https://youtu.be/abcd1234](https://drive.google.com/file/d/1rLNC0VQDK-rnHg7dsK1bkxZ7pDDjIPI0/view?usp=sharing)) |
+| ❤️ Favorite System | [![Room_Chat]](https://drive.google.com/file/d/195ReFfCsI4HEYi-Gneto6vJJGN4MWOSS/view?usp=sharing) |
+
+
