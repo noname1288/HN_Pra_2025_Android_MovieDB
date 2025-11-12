@@ -43,9 +43,21 @@ Episode
 4. **ServerData** → chứa link thực tế để phát video.
 5. **Params** và **Pagination** → phục vụ phân trang và lọc dữ liệu.
 
-## **4. Demo**
-## 🎥 Feature Demos
+---
 
+## **4. Tính năng nổi bật**
+- Tính năng **Tạo phòng xem phim (Watch Party)**  cho phép bạn bè cùng xem một bộ phim và **đồng bộ** với nhau, dù đang ở bất cứ đâu.
+
+| Tính Năng | Mô Tả Lợi Ích Cho Người Dùng |
+| :--- | :--- |
+| **Đồng Bộ Hoàn Hảo** | Mọi thành viên trong phòng đều xem cùng một khung hình. Khi một người **tạm dừng (Pause)**, **phát tiếp (Play)**, hoặc **tua nhanh/tua lại**, video sẽ được đồng bộ ngay lập tức cho tất cả mọi người. |
+| **Chat Realtime (Thời Gian Thực)** | **Trao đổi cảm xúc, bình luận** về các tình tiết phim ngay lập tức trong phòng chat riêng. Cảm giác như đang xem cùng nhau trên chiếc sofa vậy! |
+| **Quản Lý Thành Viên Toàn Diện** | **Chủ phòng (Host)** có đầy đủ quyền để: * **Mời** thêm bạn bè, * **Chấp nhận/Từ chối** yêu cầu tham gia,  và * **Loại bỏ** thành viên không phù hợp (Kick member) để duy trì trải nghiệm tốt nhất. |
+| **Dễ Dàng Thiết Lập** | Chỉ cần một cú chạm để **tạo phòng**, chia sẻ đường link mời, và bắt đầu cuộc vui xem phim ngay lập tức. |
+
+- Hơn nữa, Với mục tiêu "Native First", ứng dụng cố gắng giảm thiểu sự phụ thuộc vào các thư viện bên ngoài (Retrofit, ViewModel, LiveData,...) trừ một số thư viện đặc biệt (Glide, Exoplayer)
+
+## **5. Demo**
 | Feature | Preview |
 |----------|----------|
 | 🕹️ Watch Movie | [![Watch Movie]](https://drive.google.com/drive/folders/1gI9HWjq2If7PrpEJndytseBJlsp5OLQg?usp=sharing) |
