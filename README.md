@@ -48,7 +48,7 @@ Episode
 
 | Feature | Preview |
 |----------|----------|
-| 🕹️ Watch Movie | [![Watch Movie]]([https://youtu.be/abcd1234](https://drive.google.com/file/d/1rLNC0VQDK-rnHg7dsK1bkxZ7pDDjIPI0/view?usp=sharing)) |
-| ❤️ Favorite System | [![Room_Chat]](https://drive.google.com/file/d/195ReFfCsI4HEYi-Gneto6vJJGN4MWOSS/view?usp=sharing) |
+| 🕹️ Watch Movie | [![Watch Movie]](https://drive.google.com/drive/folders/1gI9HWjq2If7PrpEJndytseBJlsp5OLQg?usp=sharing) |
+| ❤️ Favorite System | [![Room_Chat]](https://drive.google.com/drive/folders/1gI9HWjq2If7PrpEJndytseBJlsp5OLQg?usp=sharing) |
 
 
