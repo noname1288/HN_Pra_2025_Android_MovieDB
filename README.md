@@ -61,6 +61,6 @@ Episode
 | Feature | Preview |
 |----------|----------|
 | 🕹️ Watch Movie | [![Watch Movie]](https://drive.google.com/drive/folders/1gI9HWjq2If7PrpEJndytseBJlsp5OLQg?usp=sharing) |
-| ❤️ Favorite System | [![Room_Chat]](https://drive.google.com/drive/folders/1gI9HWjq2If7PrpEJndytseBJlsp5OLQg?usp=sharing) |
+| ❤️ Room_Chat | [![Room_Chat]](https://drive.google.com/drive/folders/1gI9HWjq2If7PrpEJndytseBJlsp5OLQg?usp=sharing) |
 
 
